@@ -1,0 +1,1310 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>저당잼 7스푼 프리셋 캡처기</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;600;700&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@400;600;700;900&family=Libre+Barcode+39+Text&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-color: #f3f4f6;
+        --panel-bg: #ffffff;
+        --input-bg: #f9fafb;
+        --border: #e5e7eb;
+        --text-main: #1f2937;
+        --text-sub: #6b7280;
+
+        /* 메인 테마 컬러 */
+        --accent: #3b4252;
+        --accent-hover: #2e3440;
+        --shadow: rgba(0, 0, 0, 0.05);
+
+        /* 마지막 공연 티켓 전용 컬러 (크림 & 빈티지 골드) */
+        --ticket-bg: #fdfbf7;
+        --ticket-border: #e8e3d9;
+        --ticket-text: #2c363f;
+        --ticket-label: #8c867a;
+        --ticket-accent: #b89f71;
+      }
+
+      body {
+        font-family:
+          -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        background-color: var(--bg-color);
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        color: var(--text-main);
+        overflow: hidden;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+          overflow: auto;
+          height: auto;
+        }
+        .editor-panel {
+          width: 100% !important;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        .preview-panel {
+          height: 100vh;
+          padding: 20px;
+        }
+      }
+
+      /* ========== 고양이 + zZz 아이콘 래퍼 ========== */
+      .icon-wrap {
+        display: inline-flex;
+        align-items: flex-end;
+        margin-right: 6px;
+        color: inherit;
+      }
+      .icon-wrap svg.zzz {
+        margin-left: -5px;
+        margin-bottom: 8px;
+        opacity: 0.8;
+      }
+
+      /* ========== 좌측 에디터 패널 ========== */
+      .editor-panel {
+        width: 420px;
+        background-color: var(--panel-bg);
+        padding: 25px;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        flex-shrink: 0;
+        gap: 15px;
+        box-shadow: 4px 0 15px var(--shadow);
+        z-index: 10;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--border);
+      }
+      .title-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-bread {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: var(--text-main);
+        font-size: 1.1rem;
+        padding: 4px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      .btn-bread:hover {
+        background-color: #e2e8f0;
+        transform: translateY(-2px);
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        color: var(--text-main);
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      h2 .ver-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #fff;
+        background: var(--accent);
+        padding: 2px 6px;
+        border-radius: 4px;
+        letter-spacing: 0;
+        margin-left: 2px;
+      }
+
+      .btn-small {
+        padding: 6px 10px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+      .btn-small:hover {
+        background: #e2e8f0;
+      }
+
+      .setting-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 5px;
+      }
+
+      .setting-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .setting-row.horizontal {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      label {
+        font-size: 0.85rem;
+        color: var(--text-main);
+        font-weight: 700;
+        display: block;
+      }
+
+      select,
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.5;
+      }
+      select:focus,
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        background: var(--panel-bg);
+        box-shadow: 0 0 0 3px rgba(59, 66, 82, 0.15);
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+        display: inline-block;
+        margin: 0;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        border-radius: 24px;
+        transition: 0.3s;
+      }
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: 0.3s;
+      }
+      .toggle-switch input:checked + .toggle-slider {
+        background-color: var(--accent);
+      }
+      .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+      }
+
+      .collapsible-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        padding: 10px 15px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-top: 10px;
+        transition: background 0.2s;
+      }
+      .collapsible-header:hover {
+        background: #f1f5f9;
+      }
+      .collapsible-header .arrow {
+        font-size: 0.7rem;
+        transition: transform 0.3s;
+      }
+      .collapsible-header.open .arrow {
+        transform: rotate(180deg);
+      }
+      .collapsible-body {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px 10px;
+        border-left: 2px solid #cbd5e1;
+        margin-left: 5px;
+        display: none;
+      }
+      .collapsible-body.open {
+        display: flex;
+      }
+
+      .btn-main {
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1rem;
+        flex: 1;
+        transition: 0.2s;
+        color: white;
+        background-color: var(--accent);
+        box-shadow: 0 4px 6px rgba(59, 66, 82, 0.2);
+        margin-top: auto;
+      }
+      .btn-main:hover {
+        background-color: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(59, 66, 82, 0.3);
+      }
+
+      /* ========== 우측 미리보기 패널 (마지막 공연 티켓 스타일) ========== */
+      .preview-panel {
+        flex: 1;
+        background-color: #e5e7eb;
+        overflow-y: auto;
+        display: flex;
+        padding: 40px;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      #capture-area {
+        width: 100%;
+        max-width: 480px;
+        background-color: transparent;
+        position: relative;
+        filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.12));
+      }
+
+      .ticket-part {
+        background-color: var(--ticket-bg);
+        position: relative;
+        width: 100%;
+        border-left: 1px solid var(--ticket-border);
+        border-right: 1px solid var(--ticket-border);
+      }
+      .ticket-top {
+        border-radius: 12px 12px 0 0;
+        border-top: 1px solid var(--ticket-border);
+        padding: 40px 35px 25px 35px;
+      }
+      .ticket-middle {
+        padding: 25px 35px;
+      }
+      .ticket-bottom {
+        border-radius: 0 0 12px 12px;
+        border-bottom: 1px solid var(--ticket-border);
+        padding: 20px 35px 35px 35px;
+      }
+
+      /* 절취선 스타일링 */
+      .ticket-divider {
+        height: 0;
+        border-top: 2px dashed #d5c8b5;
+        position: relative;
+        background-color: var(--ticket-bg);
+        border-left: 1px solid var(--ticket-border);
+        border-right: 1px solid var(--ticket-border);
+      }
+      .ticket-divider::before,
+      .ticket-divider::after {
+        content: "";
+        position: absolute;
+        top: -12px;
+        width: 24px;
+        height: 24px;
+        background-color: #e5e7eb;
+        border-radius: 50%;
+        z-index: 1;
+        box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.05);
+      }
+      .ticket-divider::before {
+        left: -13px;
+        border-right: 1px solid var(--ticket-border);
+      }
+      .ticket-divider::after {
+        right: -13px;
+        border-left: 1px solid var(--ticket-border);
+      }
+
+      .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 15px;
+      }
+      .ticket-brand {
+        font-family: "Noto Serif KR", serif;
+        font-size: 0.75rem;
+        font-weight: 900;
+        color: var(--ticket-accent);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .ticket-no {
+        font-size: 0.75rem;
+        color: #a39c91;
+        font-family: monospace;
+        letter-spacing: 1px;
+      }
+      .ticket-title {
+        font-family: "Noto Serif KR", serif;
+        font-size: 2.1rem;
+        font-weight: 900;
+        color: var(--ticket-text);
+        letter-spacing: -1.5px;
+        margin: 5px 0 25px 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .ticket-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px 20px;
+      }
+      .ticket-grid.full {
+        grid-template-columns: 1fr;
+      }
+
+      .ticket-field {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .ticket-label {
+        font-family: "Noto Serif KR", serif;
+        font-size: 0.85rem;
+        color: var(--ticket-label);
+        font-weight: 700;
+        min-width: 65px;
+      }
+
+      .ticket-value {
+        font-size: 0.95rem;
+        color: var(--ticket-text);
+        font-weight: 700;
+        word-break: keep-all;
+        white-space: pre-wrap;
+        transition:
+          color 0.2s ease,
+          text-shadow 0.2s ease;
+      }
+      .ticket-value.empty {
+        color: #d1d5db;
+        font-weight: 500;
+      }
+
+      /* ✨ 자연스러운 기본값 하이라이트 (글자색상 및 미세한 글로우 효과) */
+      .ticket-value.is-default {
+        color: var(--ticket-accent);
+        text-shadow: 0 0 1px rgba(184, 159, 113, 0.3);
+      }
+
+      .ticket-section-title {
+        font-family: "Noto Serif KR", serif;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--ticket-accent);
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ticket-section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--ticket-border);
+      }
+
+      .barcode-wrap {
+        text-align: center;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .barcode-img {
+        font-family: "Libre Barcode 39 Text", cursive;
+        font-size: 3.5rem;
+        line-height: 1;
+        color: #4a5568;
+        margin: 0;
+        font-weight: normal;
+        opacity: 0.8;
+      }
+
+      /* 숟가락 아이콘 스타일 */
+      .spoon-icon {
+        color: var(--ticket-accent);
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 좌측 에디터 패널 -->
+    <div class="editor-panel">
+      <div class="header-row">
+        <div class="title-group">
+          <button
+            class="btn-bread"
+            onclick="window.location.href = 'https://toastout.github.io/toast/'"
+            title="홈으로 돌아가기"
+          >
+            🍞
+          </button>
+          <h2>
+            <!-- 고양이 + zZz SVG -->
+            <span class="icon-wrap">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+                />
+                <path d="M8 14c.5.5 1.5.5 2 0" />
+                <path d="M14 14c.5.5 1.5.5 2 0" />
+              </svg>
+              <svg
+                class="zzz"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 12h6l-6 8h6" />
+                <path d="M14 4h6l-6 8h6" />
+              </svg>
+            </span>
+            저당잼 프리셋 <span class="ver-badge">V7</span>
+          </h2>
+        </div>
+        <button onclick="resetData()" class="btn-small">초기화</button>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-row">
+          <label>이어쓰기</label>
+          <select id="i_jam" onchange="render()">
+            <option value="미개봉">미개봉</option>
+            <option value="하">하</option>
+            <option value="중">중</option>
+            <option value="상">상</option>
+          </select>
+        </div>
+        <div class="setting-row horizontal">
+          <div style="flex: 1; padding-right: 10px">
+            <label>최대문단수</label>
+            <input
+              type="text"
+              id="i_paragraphh"
+              value="2"
+              placeholder="예: 2"
+              oninput="render()"
+            />
+          </div>
+          <div style="flex: 1">
+            <label>최대문장길이</label>
+            <input
+              type="text"
+              id="i_lengthh"
+              value="5"
+              placeholder="예: 5"
+              oninput="render()"
+            />
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>AI응답모드</label>
+          <select id="i_aimode" onchange="render()">
+            <option value="RP모드">RP모드</option>
+            <option value="HTML모드">HTML모드</option>
+            <option value="OOC모드">OOC모드</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <label>상태창</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="c_stat" checked onchange="render()" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그룹: 저당잼 -->
+      <div class="collapsible-header open" onclick="toggleCollapsible(this)">
+        <span style="display: flex; align-items: center">
+          <span
+            class="icon-wrap"
+            style="transform: scale(0.75); margin-right: 4px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+              />
+              <path d="M8 14c.5.5 1.5.5 2 0" />
+              <path d="M14 14c.5.5 1.5.5 2 0" />
+            </svg>
+            <svg
+              class="zzz"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 12h6l-6 8h6" />
+              <path d="M14 4h6l-6 8h6" />
+            </svg>
+          </span>
+          저당잼 7스푼 설정
+        </span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="collapsible-body open">
+        <div class="setting-row horizontal">
+          <div style="flex: 1; padding-right: 10px">
+            <label>유저</label>
+            <select id="i_fog" onchange="render()">
+              <option value="불가">불가</option>
+              <option value="추측">추측</option>
+            </select>
+          </div>
+          <div style="flex: 1">
+            <label>색인</label>
+            <select id="i_index" onchange="render()">
+              <option value="미개봉">미개봉</option>
+              <option value="첨가" selected>첨가</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>NPC</label>
+          <select id="i_snpc" onchange="render()">
+            <option value="미개봉">미개봉</option>
+            <option value="소극적">소극적</option>
+            <option value="적극적" selected>적극적</option>
+          </select>
+        </div>
+        <div class="setting-row horizontal">
+          <div style="flex: 1; padding-right: 10px">
+            <label>글길이모드</label>
+            <select id="i_gal" onchange="render()">
+              <option value="엄격">엄격</option>
+              <option value="유연">유연</option>
+            </select>
+          </div>
+          <div style="flex: 1">
+            <label>장면속도감</label>
+            <select id="i_pace" onchange="render()">
+              <option value="유지">유지</option>
+              <option value="대화">대화</option>
+              <option value="흐름">흐름</option>
+              <option value="전환" selected>전환</option>
+              <option value="생략">생략</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그룹: 기본 설정 -->
+      <div class="collapsible-header open" onclick="toggleCollapsible(this)">
+        <span style="display: flex; align-items: center">
+          <span
+            class="icon-wrap"
+            style="transform: scale(0.75); margin-right: 4px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+              />
+              <path d="M8 14c.5.5 1.5.5 2 0" />
+              <path d="M14 14c.5.5 1.5.5 2 0" />
+            </svg>
+            <svg
+              class="zzz"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 12h6l-6 8h6" />
+              <path d="M14 4h6l-6 8h6" />
+            </svg>
+          </span>
+          기본 설정
+        </span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="collapsible-body open">
+        <div class="setting-row horizontal">
+          <div style="flex: 1; padding-right: 10px">
+            <label>내면 접근</label>
+            <select id="i_inner" onchange="render()">
+              <option value="본능/이성">본능/이성</option>
+              <option value="현상/해석">현상/해석</option>
+            </select>
+          </div>
+          <div style="flex: 1">
+            <label>내면 언어</label>
+            <select id="i_thinker" onchange="render()">
+              <option value="영어">영어</option>
+              <option value="한글">한글</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그룹: 상세 설정 -->
+      <div class="collapsible-header open" onclick="toggleCollapsible(this)">
+        <span style="display: flex; align-items: center">
+          <span
+            class="icon-wrap"
+            style="transform: scale(0.75); margin-right: 4px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+              />
+              <path d="M8 14c.5.5 1.5.5 2 0" />
+              <path d="M14 14c.5.5 1.5.5 2 0" />
+            </svg>
+            <svg
+              class="zzz"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 12h6l-6 8h6" />
+              <path d="M14 4h6l-6 8h6" />
+            </svg>
+          </span>
+          상세 설정
+        </span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="collapsible-body open">
+        <div class="setting-row">
+          <label>문체</label>
+          <select id="i_style" onchange="render()">
+            <option value="기본잼">기본잼</option>
+            <option value="작가잼">작가잼</option>
+            <option value="건조잼">건조잼</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>선호</label>
+          <textarea
+            id="i_myap"
+            placeholder="선호하는 요소를 적어주세요."
+            oninput="render()"
+          ></textarea>
+        </div>
+        <div class="setting-row">
+          <label>불호</label>
+          <textarea
+            id="i_myan"
+            placeholder="불호하는 요소를 적어주세요."
+            oninput="render()"
+          >
+보라색산문</textarea
+          >
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="saveImage()">📸 캡처 및 저장</button>
+    </div>
+
+    <!-- 우측 캡처/미리보기 패널 -->
+    <div class="preview-panel">
+      <div id="capture-area">
+        <!-- 티켓 상단 -->
+        <div class="ticket-part ticket-top">
+          <div class="ticket-header">
+            <div class="ticket-brand">Farewell Stage</div>
+            <div class="ticket-no" id="ticket-date">NO. 20260501</div>
+          </div>
+          <h1 class="ticket-title">
+            <span
+              class="icon-wrap"
+              style="
+                transform: scale(1.3);
+                margin-right: 12px;
+                color: var(--ticket-accent);
+              "
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+                />
+                <path d="M8 14c.5.5 1.5.5 2 0" />
+                <path d="M14 14c.5.5 1.5.5 2 0" />
+              </svg>
+              <svg
+                class="zzz"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 12h6l-6 8h6" />
+                <path d="M14 4h6l-6 8h6" />
+              </svg>
+            </span>
+            저당잼 7스푼
+          </h1>
+
+          <div class="ticket-grid">
+            <div class="ticket-field">
+              <div class="ticket-label">이어쓰기</div>
+              <div class="ticket-value" id="p_jam">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">AI응답모드</div>
+              <div class="ticket-value" id="p_aimode">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">최대문단수</div>
+              <div class="ticket-value" id="p_paragraphh">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">최대문장길이</div>
+              <div class="ticket-value" id="p_lengthh">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">상태창</div>
+              <div class="ticket-value" id="p_stat">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <!-- 티켓 중단 -->
+        <div class="ticket-part ticket-middle">
+          <div class="ticket-section-title">
+            <span
+              class="icon-wrap"
+              style="transform: scale(0.85); margin-right: 4px"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1.1-3.44 0 0-1.82-6.42-.42-7 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z"
+                />
+                <path d="M8 14c.5.5 1.5.5 2 0" />
+                <path d="M14 14c.5.5 1.5.5 2 0" />
+              </svg>
+              <svg
+                class="zzz"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 12h6l-6 8h6" />
+                <path d="M14 4h6l-6 8h6" />
+              </svg>
+            </span>
+            저당잼 & 기본 설정
+          </div>
+          <div class="ticket-grid" style="margin-bottom: 20px">
+            <div class="ticket-field">
+              <div class="ticket-label">유저</div>
+              <div class="ticket-value" id="p_fog">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">색인</div>
+              <div class="ticket-value" id="p_index">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">NPC</div>
+              <div class="ticket-value" id="p_snpc">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">장면속도감</div>
+              <div class="ticket-value" id="p_pace">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">글길이모드</div>
+              <div class="ticket-value" id="p_gal">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">문체</div>
+              <div class="ticket-value" id="p_style">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">내면 접근</div>
+              <div class="ticket-value" id="p_inner">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">내면 언어</div>
+              <div class="ticket-value" id="p_thinker">-</div>
+            </div>
+          </div>
+
+          <div class="ticket-grid full">
+            <div class="ticket-field">
+              <div class="ticket-label">선호</div>
+              <div class="ticket-value" id="p_myap">-</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">불호</div>
+              <div class="ticket-value" id="p_myan">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <!-- 티켓 하단 (바코드 + 숟가락 아이콘) -->
+        <div class="ticket-part ticket-bottom">
+          <div class="barcode-wrap">
+            <p class="barcode-img">*ZZZ JAM V7*</p>
+            <div class="spoon-icon">
+              <!-- 깔끔한 클래식 숟가락 SVG -->
+              <svg
+                width="60"
+                height="16"
+                viewBox="0 0 60 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <!-- 손잡이 -->
+                <path d="M18 8h36" />
+                <!-- 손잡이 끝 장식 -->
+                <path d="M54 6c1.5 0 2 1 2 2s-.5 2-2 2h-4" />
+                <!-- 숟가락 머리 (Bowl) -->
+                <ellipse cx="10" cy="8" rx="8" ry="5" />
+                <path d="M4 8c2 2 8 2 10 0" opacity="0.4" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이미지 저장용 iOS 대응 모달 -->
+    <div
+      id="save-modal"
+      onclick="closeSaveModal(event)"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+        z-index: 9999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      "
+    >
+      <div
+        onclick="event.stopPropagation()"
+        style="
+          background: #fff;
+          border-radius: 16px;
+          padding: 20px;
+          max-width: 400px;
+          width: 100%;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          text-align: center;
+          margin: auto;
+          position: relative;
+        "
+      >
+        <button
+          onclick="closeSaveModal()"
+          style="
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.1);
+            color: #334155;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+          "
+        >
+          ✕
+        </button>
+        <p
+          style="
+            margin: 0 0 6px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            font-weight: 700;
+          "
+        >
+          이미지가 생성되었습니다!
+        </p>
+        <p style="margin: 0 0 14px; font-size: 0.8rem; color: #64748b">
+          모바일은 이미지를 꾹 눌러 저장해 주세요.
+        </p>
+        <img
+          id="save-modal-img"
+          src=""
+          alt="Generated Log"
+          style="
+            max-width: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            display: block;
+            margin: 0 auto 16px;
+          "
+        />
+        <button
+          onclick="closeSaveModal()"
+          style="
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+          "
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const TEXT_FIELDS = [
+        "jam",
+        "paragraphh",
+        "lengthh",
+        "aimode",
+        "fog",
+        "index",
+        "snpc",
+        "gal",
+        "pace",
+        "inner",
+        "thinker",
+        "style",
+        "myap",
+        "myan",
+      ];
+
+      // 프리셋 기본값 설정 (일치할 경우 컬러 텍스트로 자연스럽게 하이라이트)
+      const DEFAULTS = {
+        jam: "미개봉",
+        paragraphh: "2",
+        lengthh: "5",
+        fog: "불가",
+        index: "첨가",
+        snpc: "적극적",
+        gal: "엄격",
+        pace: "전환",
+        inner: "본능/이성",
+        thinker: "영어",
+        style: "기본잼",
+        myan: "보라색산문",
+      };
+
+      window.onload = function () {
+        const date = new Date();
+        const dateString =
+          date.getFullYear().toString() +
+          String(date.getMonth() + 1).padStart(2, "0") +
+          String(date.getDate()).padStart(2, "0");
+        document.getElementById("ticket-date").textContent =
+          "NO. " + dateString;
+
+        loadData();
+        render();
+      };
+
+      function toggleCollapsible(header) {
+        const body = header.nextElementSibling;
+        header.classList.toggle("open");
+        body.classList.toggle("open");
+      }
+
+      function render() {
+        // 텍스트 필드 렌더링 및 하이라이트 체크
+        TEXT_FIELDS.forEach((field) => {
+          const inputEl = document.getElementById("i_" + field);
+          const previewEl = document.getElementById("p_" + field);
+          if (inputEl && previewEl) {
+            let val = inputEl.value.trim();
+            if (!val) {
+              previewEl.textContent = "-";
+              previewEl.className = "ticket-value empty";
+            } else {
+              previewEl.textContent = val;
+              // 기본값과 일치하면 빈티지 골드 컬러 클래스 추가
+              if (DEFAULTS[field] && val === DEFAULTS[field]) {
+                previewEl.className = "ticket-value is-default";
+              } else {
+                previewEl.className = "ticket-value";
+              }
+            }
+          }
+        });
+
+        // 상태창 토글 단일 렌더링
+        const cStat = document.getElementById("c_stat");
+        const pStat = document.getElementById("p_stat");
+        if (cStat && pStat) {
+          if (cStat.checked) {
+            pStat.textContent = "[V] 사용";
+            pStat.className = "ticket-value";
+          } else {
+            pStat.textContent = "[ ] 미사용";
+            pStat.className = "ticket-value empty";
+          }
+        }
+
+        saveData();
+      }
+
+      function saveData() {
+        const data = {};
+        TEXT_FIELDS.forEach((field) => {
+          const el = document.getElementById("i_" + field);
+          if (el) data[field] = el.value;
+        });
+
+        const cStat = document.getElementById("c_stat");
+        if (cStat) {
+          data.c_stat = cStat.checked;
+        }
+
+        localStorage.setItem("jeodang_preset_v7_final", JSON.stringify(data));
+      }
+
+      function loadData() {
+        const saved = localStorage.getItem("jeodang_preset_v7_final");
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+
+            TEXT_FIELDS.forEach((field) => {
+              const el = document.getElementById("i_" + field);
+              if (el && data[field] !== undefined) {
+                el.value = data[field];
+              }
+            });
+
+            const cStat = document.getElementById("c_stat");
+            if (cStat && data.c_stat !== undefined) {
+              cStat.checked = data.c_stat;
+            }
+          } catch (e) {
+            console.error("데이터 로드 실패", e);
+          }
+        }
+      }
+
+      function resetData() {
+        if (confirm("입력한 설정을 모두 초기화하시겠습니까?")) {
+          localStorage.removeItem("jeodang_preset_v7_final");
+          location.reload();
+        }
+      }
+
+      function saveImage() {
+        const captureArea = document.getElementById("capture-area");
+        window.scrollTo(0, 0);
+
+        html2canvas(captureArea, {
+          scale: 2,
+          backgroundColor: null,
+          useCORS: true,
+        }).then((canvas) => {
+          const imgData = canvas.toDataURL("image/png");
+          const isIOS =
+            /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+          if (isIOS) {
+            const modal = document.getElementById("save-modal");
+            const modalImg = document.getElementById("save-modal-img");
+            modalImg.src = imgData;
+            modal.style.display = "flex";
+          } else {
+            const link = document.createElement("a");
+            link.download = "저당잼_7스푼_티켓_V7.png";
+            link.href = imgData;
+            link.click();
+          }
+        });
+      }
+
+      function closeSaveModal(e) {
+        if (!e || e.target === document.getElementById("save-modal")) {
+          const modal = document.getElementById("save-modal");
+          modal.style.display = "none";
+          document.getElementById("save-modal-img").src = "";
+        }
+      }
+    </script>
+  </body>
+</html>
