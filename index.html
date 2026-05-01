@@ -62,7 +62,8 @@
         }
         .preview-panel {
           height: 100vh;
-          padding: 20px;
+          padding: 30px 15px; /* 모바일 좌우 패딩 축소 */
+          overflow-x: hidden; /* 가로 스크롤 방지 */
         }
       }
 
@@ -327,8 +328,10 @@
       }
 
       #capture-area {
-        width: 100%;
+        /* 모바일에서 펀치홀(-13px)로 인해 100%를 초과하는 문제 수정 */
+        width: calc(100% - 28px);
         max-width: 480px;
+        margin: 0 auto;
         background-color: transparent;
         position: relative;
         filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.12));
@@ -419,7 +422,7 @@
       .ticket-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px 20px;
+        gap: 15px 15px; /* 간격 살짝 조정 */
       }
       .ticket-grid.full {
         grid-template-columns: 1fr;
@@ -429,14 +432,15 @@
         display: flex;
         flex-direction: row;
         align-items: baseline;
-        gap: 10px;
+        gap: 8px;
       }
       .ticket-label {
         font-family: "Noto Serif KR", serif;
         font-size: 0.85rem;
         color: var(--ticket-label);
         font-weight: 700;
-        min-width: 65px;
+        min-width: 60px; /* 좁은 텍스트 영역 최적화 */
+        flex-shrink: 0; /* 글씨 찌그러짐 방지 */
       }
 
       .ticket-value {
@@ -500,6 +504,35 @@
         color: var(--ticket-accent);
         opacity: 0.85;
       }
+
+      /* 모바일 전용 반응형 레이아웃 강화 */
+      @media (max-width: 480px) {
+        .ticket-top {
+          padding: 30px 20px 20px 20px;
+        }
+        .ticket-middle {
+          padding: 25px 20px;
+        }
+        .ticket-bottom {
+          padding: 20px 20px 30px 20px;
+        }
+        .ticket-title {
+          font-size: 1.8rem;
+        }
+        .ticket-grid {
+          gap: 12px 8px;
+        }
+        .ticket-label {
+          min-width: 55px;
+          font-size: 0.8rem;
+        }
+        .ticket-value {
+          font-size: 0.9rem;
+        }
+        .barcode-img {
+          font-size: 3rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -548,7 +581,7 @@
                 <path d="M14 4h6l-6 8h6" />
               </svg>
             </span>
-            저당잼 프리셋 <span class="ver-badge">V7</span>
+            저당잼 프리셋 <span class="ver-badge">7스푼</span>
           </h2>
         </div>
         <button onclick="resetData()" class="btn-small">초기화</button>
@@ -1005,7 +1038,7 @@
         <!-- 티켓 하단 (바코드 + 숟가락 아이콘) -->
         <div class="ticket-part ticket-bottom">
           <div class="barcode-wrap">
-            <p class="barcode-img">*ZZZ JAM V7*</p>
+            <p class="barcode-img">*ZZZ JAM 7*</p>
             <div class="spoon-icon">
               <!-- 깔끔한 클래식 숟가락 SVG -->
               <svg
@@ -1291,7 +1324,7 @@
             modal.style.display = "flex";
           } else {
             const link = document.createElement("a");
-            link.download = "저당잼_7스푼_티켓_V7.png";
+            link.download = "저당잼_7스푼_티켓_v7.png";
             link.href = imgData;
             link.click();
           }
